@@ -1,8 +1,6 @@
-const connectDB = require('./config/db');
 const File = require('./models/file');
 const fs = require('fs');
 
-connectDB();
 
 // Get all records older than 24 hours 
 async function fetchData() {

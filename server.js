@@ -1,9 +1,10 @@
-require('dotenv').config();
 const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
+const mongoose = require('mongoose');
 const path = require('path');
 const cors = require('cors');
+require('dotenv').config();
+
+const app = express();
 // Cors 
 const corsOptions = {
   origin: process.env.ALLOWED_CLIENTS.split(',')
@@ -18,21 +19,27 @@ const corsOptions = {
 //     "optionsSuccessStatus": 204
 //   }
 
-app.use(cors(corsOptions))
 app.use(express.static('public'));
-
-const connectDB = require('./config/db');
-connectDB();
-
+app.set('view engine', 'ejs');
+app.use(cors(corsOptions))
 app.use(express.json());
 
-app.set('views', path.join(__dirname, '/views'));
-app.set('view engine', 'ejs');
-
 // Routes 
-app.use('/api/files', require('./routes/files'));
-app.use('/files', require('./routes/show'));
-app.use('/files/download', require('./routes/download'));
+app.use('/api', require('./routes/api'));
 
+mongoose.connect(process.env.MONGO_CONNECTION_URL, {
+    useNewUrlParser: true, 
+    useCreateIndex:true, 
+    useUnifiedTopology: true, 
+    useFindAndModify : true 
+});
+const connection = mongoose.connection;
+connection.once('open', () => {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT,()=>{
+      console.log(`Listening on port ${PORT}.`)
+    });
+}).catch(err => {
+    console.log('Connection failed ☹️☹️☹️☹️');
+});
 
-app.listen(PORT, console.log(`Listening on port ${PORT}.`));
